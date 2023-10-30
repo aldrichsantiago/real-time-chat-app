@@ -21,6 +21,7 @@ import { auth } from '../services/firebase';
 import { UseUserProps } from '../context/UserProvider';
 import useUser from '../hooks/useUser';
 import { toast } from 'react-toastify';
+import axios from '../api/axios';
 
 type RegisterFormObj = {
     name:string,
@@ -122,15 +123,28 @@ function GetStarted() {
  
     const onRegisterSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
+
+      
      
       await createUserWithEmailAndPassword(auth, registerForm.email, registerForm.password)
         .then((userCredential) => {
             // Signed in
             const user = userCredential.user;
             console.log(user);
-            navigate(0)
             // ...
+
+            axios.post(`/user`, {...registerForm, uid:user.uid})
+            .then(res => {
+                console.log(res)
+            })
+            .catch(err => {
+                console.log(err)
+            })
             notify("Successfully Registered")
+
+            navigate(0)
+
+
 
         })
         .catch((error) => {
@@ -138,9 +152,11 @@ function GetStarted() {
             const errorMessage = error.message;
             console.log(errorCode, errorMessage);
             errNotify(errorMessage);
-
             // ..
         });
+        
+
+
     }
 
     const onLoginSubmit = (e: React.FormEvent) => {

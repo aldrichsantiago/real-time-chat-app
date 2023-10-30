@@ -13,23 +13,29 @@ import {
 import useUser from "../hooks/useUser";
 import { UseUserProps } from "../context/UserProvider";
 import { useEffect } from "react";
+import axios from "../api/axios";
 
 const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
 
- 
-export default function Sidebar({handleLogout}:{handleLogout:()=>void}) {
+export default function Sidebar({handleLogout, selectMessage}:{handleLogout:()=>void, selectMessage:(id:number)=>void}) {
   const { user, setUser }: UseUserProps = useUser();
 
   useEffect(() => {
     setUser? setUser(userLocal) : console.log("NO USER")
     console.log("this ran");
   }, [userLocal])
-  
-  const selectMessage = (id:number) => {               
-    console.log(id)
-  }
-  
 
+  useEffect(() => {
+    axios.post(`/users/email`, {
+      email:user?.email,
+      username:user?.username,
+      photoURL:user?.photoURL
+
+    })
+    .then(res => console.log(res.data))
+    .catch(err => console.log(err))
+  }, [userLocal])
+  
   return (
     <Card className="h-[calc(100vh-2rem)] w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5">
       <div className="mb-6 p-2">
@@ -38,7 +44,7 @@ export default function Sidebar({handleLogout}:{handleLogout:()=>void}) {
             variant="circular"
             alt="user"
             className="mx-6 w-10 h-10 rounded-full"
-            src={ user ? user.photoURL : "https://www.eventfulnigeria.com/wp-content/uploads/2021/04/Avatar-PNG-Free-Download.png"}
+            src={ user?.photoURL ? user.photoURL : "https://www.eventfulnigeria.com/wp-content/uploads/2021/04/Avatar-PNG-Free-Download.png"}
           />
           {user?.username || user?.email || "NO USER"}
         </Typography>
@@ -64,7 +70,7 @@ export default function Sidebar({handleLogout}:{handleLogout:()=>void}) {
             </ListItemSuffix>
           </ListItem>
           
-          <ListItem>
+          <ListItem onClick={()=>selectMessage(2)}>
             <ListItemPrefix>
               <Avatar
                 variant="circular"

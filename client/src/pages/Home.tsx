@@ -6,11 +6,18 @@ import { useNavigate } from "react-router-dom";
 import { UseUserProps } from "../context/UserProvider";
 import useUser from "../hooks/useUser";
 import { toast } from 'react-toastify';
+import { useState } from 'react'
 
 function Home() {
   const navigate = useNavigate();
   const { setUser }: UseUserProps = useUser();
+  const [selectedMessage, setSelectedMessage] = useState(0)
 
+
+  const selectMessage = (id:number) => {               
+    console.log(id)
+    setSelectedMessage(id)
+  }
   
   const notify = (message:string) => 
   toast.success(message, {
@@ -44,7 +51,7 @@ function Home() {
 
   return (
     <div className="h-screen p-4 flex gap-4">
-      <Sidebar handleLogout={handleLogout}/>
+      <Sidebar handleLogout={handleLogout} selectMessage={selectMessage}/>
       <MessageView/>
     </div>
   )
