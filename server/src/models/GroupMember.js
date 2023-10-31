@@ -9,7 +9,7 @@ const groupMemberSchema = new Schema({
         default: null
     },
     conversationId: {
-        type: 'UUID',
+        type: 'String',
         default: null
     },
     joinedDate: { 

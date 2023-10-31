@@ -1,7 +1,16 @@
 import { Avatar, Button, Card, Popover, PopoverContent, PopoverHandler, Tooltip, Typography } from "@material-tailwind/react";
+import axios from "../api/axios";
+import { useState } from "react";
+import useUser from "../hooks/useUser";
+import { UseUserProps } from "../context/UserProvider";
 
-function MessageViewHeader(){
-
+function MessageViewHeader({contact}: {contact:{
+    name:string, 
+    photoURL:string,
+    email:string
+    uid:string
+}}){
+    console.log(contact)
     return(
         <span className="w-full flex justify-between items-center bg-gray-100 rounded-t-lg">
             <span>
@@ -19,10 +28,10 @@ function MessageViewHeader(){
                     variant="circular"
                     alt="user 2"
                     className="w-8 h-8 mx-3 hover:z-10 focus:z-10"
-                    src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1061&q=80"
+                    src={contact?.photoURL}
                 />
                 <Typography>
-                    William Shakespeare
+                    {contact?.name}
                 </Typography>
             </span>
             <span className="flex items-center">
@@ -35,31 +44,55 @@ function MessageViewHeader(){
                     </Button>
                     </PopoverHandler>
                     <PopoverContent>
-                        Name: William Shakespeare <br />
-                        Email: william.shake@gmail.com
+                        Name: {contact?.name} <br />
+                        Email: {contact?.email}
                     </PopoverContent>
                 </Popover>
             </span>
-            
-
         </span>
     )
 }
 
-function MessageViewFooter(){
+function MessageViewFooter({contact}: {contact:{
+    name:string, 
+    photoURL:string,
+    email:string
+    uid:string
+}})
+{
+    const [message, setMessage] = useState<string>("")
+    const { user }:UseUserProps = useUser();
+    const sendMessage = async(e: React.FormEvent) => {
+        e.preventDefault();
+        const res = await axios.post(`/message`, {
+            message,
+            senderEmail:user?.email,
+            receiverEmail: contact.email,
+            conversationId: "",
+            senderUID: user?.uid,
+            receiverUID: contact.uid
+        });
+        console.log({
+            message,
+            senderEmail:"",
+            receiverEmail: contact.email,
+            conversationId: ""
+        })
+    }
 
     return(
         <span className="w-full flex items-center absolute bottom-0 bg-blue-gray-50 rounded-b-lg">
             <div className="w-full flex items-center ">
                 <span className="w-full h-10">
                     <textarea 
+                    onChange={(e)=>setMessage(e.target.value)}
                     className="w-full h-full m-0 border-t-2 p-2 rounded-bl-lg overflow-hidden resize-none"
                     placeholder="Enter your message here..."
                     />
                 </span>
                 <a href="#buttons-with-link">
                 <Tooltip content="Send" placement="top">
-                    <Button className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
+                    <Button onClick={sendMessage} className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                         </svg>
@@ -148,12 +181,17 @@ function MessageBody() {
     )
 }
 
-export default function MessageView() {
+export default function MessageView({contact}: {contact:{
+    name:string, 
+    photoURL:string,
+    email:string
+    uid:string
+}}) {
   return (
     <Card className="w-full">
-        <MessageViewHeader/>
+        <MessageViewHeader contact={contact}/>
          <MessageBody/>
-        <MessageViewFooter/>   
+        <MessageViewFooter contact={contact}/>   
     </Card>
   )
 }

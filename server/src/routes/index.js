@@ -1,17 +1,18 @@
 import express from "express";
-import { createUser, getUserByEmail } from "../controllers/Users.js";
+import { createConversation, createUser, createUserByEmail } from "../controllers/Users.js";
 import { createMessage, getMessagesOfUser } from "../controllers/Messages.js";
 
 const router = express.Router();
 
 // UserRoutes
 router.post('/user', createUser);
-router.post('/users/email', getUserByEmail);
+router.post('/users/new/email', createUserByEmail);
+router.post('/users/email', createConversation);
 
 
 
 // MessageRoutes
-router.get('/message', createMessage);
+router.post('/message', createMessage);
 router.get('/messages/:userId', getMessagesOfUser);
 
 

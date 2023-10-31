@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 
 const conversationSchema = new Schema({
     conversationId: {
-        type: 'UUID',
+        type: 'String',
         default: () => randomUUID()
     },
     conversationName: {

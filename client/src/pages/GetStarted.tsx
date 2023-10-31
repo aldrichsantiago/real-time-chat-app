@@ -118,21 +118,15 @@ function GetStarted() {
           
         });
     }
-    
-
  
     const onRegisterSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
-
-      
-     
       await createUserWithEmailAndPassword(auth, registerForm.email, registerForm.password)
         .then((userCredential) => {
             // Signed in
             const user = userCredential.user;
             console.log(user);
             // ...
-
             axios.post(`/user`, {...registerForm, uid:user.uid})
             .then(res => {
                 console.log(res)
@@ -141,11 +135,7 @@ function GetStarted() {
                 console.log(err)
             })
             notify("Successfully Registered")
-
             navigate(0)
-
-
-
         })
         .catch((error) => {
             const errorCode = error.code;

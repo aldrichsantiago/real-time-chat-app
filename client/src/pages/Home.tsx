@@ -12,11 +12,16 @@ function Home() {
   const navigate = useNavigate();
   const { setUser }: UseUserProps = useUser();
   const [selectedMessage, setSelectedMessage] = useState(0)
+  const [contact, setContact] = useState<any>({})
 
 
-  const selectMessage = (id:number) => {               
+  const selectConversation = (id:number) => {               
     console.log(id)
     setSelectedMessage(id)
+  }
+  const setNewContact = (data:{}) => {               
+    console.log(data)
+    setContact(data)
   }
   
   const notify = (message:string) => 
@@ -32,13 +37,11 @@ function Home() {
   });
 
   const handleLogout = () => {         
-
     signOut(auth).then(() => {
     // Sign-out successful.
         navigate("/");
       setUser? setUser({}) : console.log("NO USER")
       localStorage.setItem("user",JSON.stringify({}))
-
       console.log("Signed out successfully")
       notify("Signed out successfully")
     }).catch((error) => {
@@ -51,8 +54,14 @@ function Home() {
 
   return (
     <div className="h-screen p-4 flex gap-4">
-      <Sidebar handleLogout={handleLogout} selectMessage={selectMessage}/>
-      <MessageView/>
+      <Sidebar 
+      handleLogout={handleLogout} 
+      selectConversation={selectConversation}
+      setNewContact={setNewContact}
+      />
+      <MessageView
+      contact={contact}
+      />
     </div>
   )
 }

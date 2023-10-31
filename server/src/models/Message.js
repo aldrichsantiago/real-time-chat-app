@@ -14,7 +14,10 @@ const messageSchema = new Schema({
     default: Date.now 
   },
   senderEmail: String,
-  receiverEmail: String
+  receiverEmail: String,
+  senderUID: String,
+  receiverUID: String,
+  conversationId: String
 });
 
 export const Message = mongoose.model('Message', messageSchema);
