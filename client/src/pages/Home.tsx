@@ -7,15 +7,16 @@ import { UseUserProps } from "../context/UserProvider";
 import useUser from "../hooks/useUser";
 import { toast } from 'react-toastify';
 import { useState } from 'react'
+import axios from "../api/axios";
 
 function Home() {
   const navigate = useNavigate();
-  const { setUser }: UseUserProps = useUser();
-  const [selectedMessage, setSelectedMessage] = useState(0)
+  const { setUser, user }: UseUserProps = useUser();
+  const [selectedMessage, setSelectedMessage] = useState<any>('')
   const [contact, setContact] = useState<any>({})
 
 
-  const selectConversation = (id:number) => {               
+  const selectConversation = (id:string) => {               
     console.log(id)
     setSelectedMessage(id)
   }
@@ -23,6 +24,26 @@ function Home() {
     console.log(data)
     setContact(data)
   }
+
+  const sendMessage = async(e: React.FormEvent, message: string) => {
+    e.preventDefault();
+    const res = await axios.post(`/message`, {
+      message,
+      senderEmail:user?.email,
+      receiverEmail: contact.email,
+      conversationId: selectedMessage,
+      senderUID: user?.uid,
+      receiverUID: contact.uid
+    });
+    console.log({
+      message,
+      senderEmail:user?.email,
+      receiverEmail: contact.email,
+      conversationId: selectedMessage,
+      senderUID: user?.uid,
+      receiverUID: contact.uid
+    })
+}
   
   const notify = (message:string) => 
   toast.success(message, {
@@ -61,6 +82,8 @@ function Home() {
       />
       <MessageView
       contact={contact}
+      sendMessage={sendMessage}
+      selectedMessage={selectedMessage}
       />
     </div>
   )

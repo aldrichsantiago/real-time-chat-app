@@ -1,8 +1,6 @@
 import { Avatar, Button, Card, Popover, PopoverContent, PopoverHandler, Tooltip, Typography } from "@material-tailwind/react";
-import axios from "../api/axios";
 import { useState } from "react";
-import useUser from "../hooks/useUser";
-import { UseUserProps } from "../context/UserProvider";
+
 
 function MessageViewHeader({contact}: {contact:{
     name:string, 
@@ -10,7 +8,6 @@ function MessageViewHeader({contact}: {contact:{
     email:string
     uid:string
 }}){
-    console.log(contact)
     return(
         <span className="w-full flex justify-between items-center bg-gray-100 rounded-t-lg">
             <span>
@@ -53,32 +50,9 @@ function MessageViewHeader({contact}: {contact:{
     )
 }
 
-function MessageViewFooter({contact}: {contact:{
-    name:string, 
-    photoURL:string,
-    email:string
-    uid:string
-}})
+function MessageViewFooter({sendMessage}: {sendMessage: (e: React.FormEvent, val: string)=>void})
 {
-    const [message, setMessage] = useState<string>("")
-    const { user }:UseUserProps = useUser();
-    const sendMessage = async(e: React.FormEvent) => {
-        e.preventDefault();
-        const res = await axios.post(`/message`, {
-            message,
-            senderEmail:user?.email,
-            receiverEmail: contact.email,
-            conversationId: "",
-            senderUID: user?.uid,
-            receiverUID: contact.uid
-        });
-        console.log({
-            message,
-            senderEmail:"",
-            receiverEmail: contact.email,
-            conversationId: ""
-        })
-    }
+    const [message, setMessage] = useState<string>("")    
 
     return(
         <span className="w-full flex items-center absolute bottom-0 bg-blue-gray-50 rounded-b-lg">
@@ -92,7 +66,7 @@ function MessageViewFooter({contact}: {contact:{
                 </span>
                 <a href="#buttons-with-link">
                 <Tooltip content="Send" placement="top">
-                    <Button onClick={sendMessage} className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
+                    <Button onClick={(e)=>sendMessage(e,message)} className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                         </svg>
@@ -105,8 +79,8 @@ function MessageViewFooter({contact}: {contact:{
     )
 }
 
-function MessageBody() {
-
+function MessageBody({selectedMessage}:{selectedMessage:string}) {
+    console.log(selectedMessage)
     return(
         <div className="py-12 overflow-auto">
 
@@ -181,17 +155,21 @@ function MessageBody() {
     )
 }
 
-export default function MessageView({contact}: {contact:{
-    name:string, 
-    photoURL:string,
-    email:string
-    uid:string
-}}) {
+export default function MessageView({contact, sendMessage, selectedMessage}: {
+    contact:{
+        name:string, 
+        photoURL:string,
+        email:string
+        uid:string
+    },
+    sendMessage: (e: React.FormEvent, m: string)=>void,
+    selectedMessage: string
+}) {
   return (
     <Card className="w-full">
         <MessageViewHeader contact={contact}/>
-         <MessageBody/>
-        <MessageViewFooter contact={contact}/>   
+         <MessageBody selectedMessage={selectedMessage}/>
+        <MessageViewFooter sendMessage={sendMessage}/>   
     </Card>
   )
 }

@@ -4,14 +4,14 @@ const { Schema } = mongoose;
 
 
 const conversationSchema = new Schema({
-    conversationId: {
-        type: 'String',
-        default: () => randomUUID()
-    },
     conversationName: {
-        type:String,
+        type: String,
         default: null
     },
+    members: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }]
 });
 
 export const Conversation = mongoose.model('Conversation', conversationSchema);

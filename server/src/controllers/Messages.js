@@ -1,32 +1,35 @@
-import { Conversation } from "../models/Conversation.js";
-import { GroupMember } from "../models/GroupMember.js";
 import { Message } from "../models/Message.js";
 
 //Start of Helper Functions
+// checks if a string is uuid => boolean
 function isUUID(str) {
     const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     return uuidRegex.test(str);
 }
+
+// find duplicates in certain fields => array of obj
+const findDuplicates = (arr, field) => {
+    const counts = arr.reduce((acc, obj) => {
+      const key = obj[field];
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  
+    const duplicates = [];
+    for (const key in counts) {
+      if (counts[key] > 1) {
+        const duplicateItems = arr.filter(obj => obj[field] === key);
+        duplicates.push(...duplicateItems);
+      }
+    }
+    return duplicates;
+  };
+
 // End of Helper Functions
-// Basic CRUD
+
+
 export async function createMessage(req, res) {
     try {
-        const { message, senderEmail, receiverEmail, senderUID, receiverUID } = req.body;
-        const groupMembers = await GroupMember.find({
-            groupMemberId: {$in:[senderUID, receiverUID]},
-        })
-
-        console.log(groupMembers)
-        
-        
-        console.log(groupMembers)
-        return res.status(200)
-        await Message.create({ 
-            message,
-            conversationId,
-            senderEmail,
-            receiverEmail,
-        });
         return res.status(201).json({
             success: true,
             message: "Message Sent"
@@ -40,7 +43,7 @@ export async function createMessage(req, res) {
     }
 }
 
-export async function getMessagesOfUser(req, res) {
+export async function getMessagesOfUsers(req, res) {
     try {
         const { email } = req.body
         const messages = await Message.find({
@@ -73,28 +76,3 @@ export async function sendMessage(req, res) {
         });
     }
 }
-
-
-// export async function getMessagesOfUser(req, res) {
-//     try {
-//         const userId = req.params.userId
-//         if(!isUUID(userId)){
-//             console.log("userId is not a valid UUID")
-//             return res.status(400).json({
-//                 success:false, 
-//                 message:"userId is not a valid UUID"
-//             });
-//         }
-//         const messages = await Message.find({
-//             senderId: userId
-//         });
-//         console.log("Getting Messages...")
-//         return res.status(201).json({ messages });
-//     } catch (error) {
-//         console.log(error)
-//         return res.status(400).json({
-//             success:false, 
-//             message:"Message not viewed"
-//         });
-//     }
-// }
