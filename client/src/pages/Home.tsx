@@ -17,8 +17,14 @@ function Home() {
 
 
   const selectConversation = (id:string) => {               
-    console.log(id)
     setSelectedMessage(id)
+    axios.post(`/users/get-members`, {
+      uid: user?.uid,
+      conversationName: id
+    })
+    .then(res => setContact(res.data))
+    .catch(err => console.log(err))
+    
   }
   const setNewContact = (data:{}) => {               
     console.log(data)
@@ -30,18 +36,12 @@ function Home() {
     const res = await axios.post(`/message`, {
       message,
       senderEmail:user?.email,
-      receiverEmail: contact.email,
-      conversationId: selectedMessage,
-      senderUID: user?.uid,
-      receiverUID: contact.uid
+      conversationName: selectedMessage,
     });
     console.log({
       message,
       senderEmail:user?.email,
-      receiverEmail: contact.email,
-      conversationId: selectedMessage,
-      senderUID: user?.uid,
-      receiverUID: contact.uid
+      conversationName: selectedMessage,
     })
 }
   

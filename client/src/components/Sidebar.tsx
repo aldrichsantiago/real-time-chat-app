@@ -21,16 +21,17 @@ import { UseUserProps } from "../context/UserProvider";
 import { useEffect, useState } from "react";
 import axios from "../api/axios";
 import { toast } from 'react-toastify';
+import moment from "moment";
 
 const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
 
 type ConversationTypes = {
   conversationName: string
+  latestMessage: {message:string, createdAt: string}
   members: {
     name: string,
     photoURL: string,
     email: string,
-
   }[]
 }
 
@@ -45,7 +46,7 @@ export default function Sidebar({
 }) {
   const { user, setUser }: UseUserProps = useUser();
   const [open, setOpen] =useState(false);
-  const [conversations, setConversations] = useState<ConversationTypes[]>([]);
+  const [conversations, setConversations] = useState<ConversationTypes[]>();
   const [contactEmail, setContactEmail] = useState<string>('')
   const [currentSelected, setCurrentSelected] = useState('');
 
@@ -78,7 +79,6 @@ export default function Sidebar({
   const changeChat = (id:string) => {
     setCurrentSelected(id)
     selectConversation(id)
-    console.log(id)
   };
 
   useEffect(() => {
@@ -98,6 +98,13 @@ export default function Sidebar({
     .then(res => console.log(res.data))
     .catch(err => console.log(err))
 
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     axios.post(`/users/get-conversations`, {
       uid: userLocal.uid,
     },{signal})
@@ -110,7 +117,6 @@ export default function Sidebar({
     return () => controller.abort()
   }, [])
   
-  console.log(conversations)
   return (
     <Card className="h-[calc(100vh-2rem)] w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5">
       <div className="mb-6 p-2 flex items-center justify-between">
@@ -173,8 +179,10 @@ export default function Sidebar({
             </ListItemSuffix>
           </ListItem>
           
-          { conversations?.map(({conversationName, members})=>(
-            <ListItem onClick={()=>changeChat(conversationName)}>
+          { conversations?.map(({conversationName, members, latestMessage})=>{
+            const time = moment.utc(latestMessage.createdAt).utcOffset(8 * 60).format("HH:mm");
+            return(
+            <ListItem onClick={()=>changeChat(conversationName)} key={conversationName}>
               <ListItemPrefix>
                 <Avatar
                   variant="circular"
@@ -189,14 +197,15 @@ export default function Sidebar({
                 {members[0]?.name == userLocal.username? members[1]?.name || members[1]?.email : members[0]?.name || members[0]?.email }
                 </Typography>
                 <Typography variant="small" className="font-bold max-w-xs truncate">
-                New Message
+                {latestMessage.message}
                 </Typography>
               </div>
               <ListItemSuffix className="relative">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                {/* <span className="w-2 h-2 bg-blue-500 rounded-full"></span> */}
+                {time}
               </ListItemSuffix>
             </ListItem>
-          ))}
+          )})}
           
         </div>
       </List>

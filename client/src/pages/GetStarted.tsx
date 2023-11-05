@@ -99,7 +99,7 @@ function GetStarted() {
           notify("Successfully Logged In")
           console.log(user)
           console.log(token)
-          navigate(0);
+          window.location.reload()
 
         }).catch((error) => {
           // Handle Errors here.
@@ -135,7 +135,7 @@ function GetStarted() {
                 console.log(err)
             })
             notify("Successfully Registered")
-            navigate(0)
+            window.location.reload()
         })
         .catch((error) => {
             const errorCode = error.code;

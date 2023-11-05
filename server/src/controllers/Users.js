@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Conversation } from "../models/Conversation.js";
 import { User } from "../models/User.js";
 import { randomUUID } from 'crypto'
@@ -114,7 +115,6 @@ export async function createConversation(req, res) {
                     console.log('Conversations involving the users:', conversations);
                     return res.status(201).json(conversations);
                 }
-                
             }
         });
 
@@ -136,20 +136,110 @@ export async function getConversations(req, res) {
         },'_id');
         
         let userId1 = user._id
-        Conversation.find({
-            members: { $all: [userId1] }
-        })
-        .populate('members') // Populate the members' details if needed
-        .exec((err, conversations) => {
-            if (err) {
-            // Handle error
-            console.log(err)
-            return res.status(400).json({success: false, message: 'Error finding conversations'});
+        // Conversation.find({
+        //     members: { $all: [userId1] }
+        // })
+        // .populate('members') // Populate the members' details if needed
+        // .exec((err, conversations) => {
+        //     if (err) {
+        //     // Handle error
+        //     console.log(err)
+        //     return res.status(400).json({success: false, message: 'Error finding conversations'});
 
+        //     } else {
+        //     // `conversations` will contain conversations where both users are members
+        //     console.log('Conversations involving the users:', conversations);
+        //     return res.status(201).json(conversations);
+        //     }
+        // });
+
+        Conversation.aggregate([
+            {
+                $match: { members: mongoose.Types.ObjectId(userId1) }
+            },
+            {
+              $lookup: {
+                from: 'messages',
+                localField: '_id',
+                foreignField: 'conversation',
+                as: 'messages',
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                conversationName: 1,
+                latestMessage: { $arrayElemAt: ['$messages', -1] },
+                members: 1
+              },
+            },
+            {
+              $lookup: {
+                from: 'users', // Assuming your user collection is named 'users'
+                localField: 'members',
+                foreignField: '_id',
+                as: 'memberDetails',
+              },
+            },
+            {
+              $addFields: {
+                members: '$memberDetails',
+              },
+            },
+            { $sort: { 'latestMessage.createdAt': -1 } },
+          ])
+            .exec((err, conversations) => {
+              if (err) {
+                console.error(err);
+                return res.status(400).json({success: false, message: 'Error finding conversations'});
+                // Handle error
+              } else {
+                console.log(conversations);
+                // Conversations sorted by the latest messages with members populated
+                return res.status(201).json(conversations);
+                }
+            });
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({
+            success:false, 
+            message:"Error on Getting Conversations"
+        });
+    }
+}
+
+export async function getContact(req, res) {
+    try {
+        const { uid, conversationName } = req.body
+        const user = await User.findOne({
+            uid: uid
+        },'_id');
+        
+        Conversation.findOne({ conversationName: conversationName })
+        .select('members') // Select the 'members' field only
+        .populate('members', 'uid name email photoURL') // Populate user details for the members
+        .exec((err, conversation) => {
+            if (err) {
+            console.error(err);
+            // Handle error
+            return res.status(400).json({
+                success:false, 
+                message:"Error on Getting Conversations"
+            });
             } else {
-            // `conversations` will contain conversations where both users are members
-            console.log('Conversations involving the users:', conversations);
-            return res.status(201).json(conversations);
+            if (conversation) {
+                const contact = conversation.members.find(contact => contact.uid !== uid)
+                console.log(contact)
+                return res.status(201).json(contact);
+                // Users who are members of the specified conversation
+            } else {
+                console.log('Conversation not found');
+                return res.status(400).json({
+                    success:false, 
+                    message:"Error on Getting Conversations"
+                });
+            }
             }
         });
 
@@ -161,3 +251,5 @@ export async function getConversations(req, res) {
         });
     }
 }
+
+

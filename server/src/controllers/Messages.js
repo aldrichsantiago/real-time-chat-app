@@ -1,4 +1,6 @@
+import { Conversation } from "../models/Conversation.js";
 import { Message } from "../models/Message.js";
+import { User } from "../models/User.js";
 
 //Start of Helper Functions
 // checks if a string is uuid => boolean
@@ -30,6 +32,18 @@ const findDuplicates = (arr, field) => {
 
 export async function createMessage(req, res) {
     try {
+        const { message, senderEmail, conversationName } = req.body;
+
+        const contact = await User.findOne({email: {$in:[senderEmail]}})
+        const conversation = await Conversation.findOne({conversationName: {$in:[conversationName]}})
+        console.log(conversation._id)
+
+        await Message.create({
+            message,
+            sender: contact._id,
+            conversation: conversation._id,
+        })
+
         return res.status(201).json({
             success: true,
             message: "Message Sent"
@@ -43,18 +57,61 @@ export async function createMessage(req, res) {
     }
 }
 
-export async function getMessagesOfUsers(req, res) {
+export async function getConversationMessages(req, res) {
     try {
-        const { email } = req.body
-        const messages = await Message.find({
-            senderEmail: email
+        const { conversationName, senderEmail } = req.body
+        const conversation = await Conversation.findOne({
+            conversationName
         });
-        return res.status(201).json(messages);
+
+        if (conversationName == '1'){
+            return res.status(200)
+        }
+        if (conversation === null){
+            return res.status(400)
+        }
+        const sender = await User.findOne({
+            email: senderEmail
+        });
+        console.log(conversation)
+        // Conversation.find({
+        //     conversationName: { $all: [conversationName] }
+        // })
+        // .populate('members') // Populate the members' details if needed
+        // .exec((err, conversations) => {
+        //     if (err) {
+        //     // Handle error
+        //     console.log(err)
+        //     return res.status(400).json({success: false, message: 'Error finding conversations'});
+
+        //     } else {
+        //     // `conversations` will contain conversations where both users are members
+        //     console.log('conversations', conversations);
+        //     return res.status(201).json(conversations);
+        //     }
+        // });
+
+        // Find all messages in the given room between the two users
+        Message.find({
+            conversation: conversation._id
+        })
+        .populate('sender') // Populate sender details if needed
+        .exec((err, messages) => {
+            if (err) {
+            // Handle error
+            } else {
+            // `messages` will contain all messages exchanged between the specified users in the room
+            console.log('Messages in the conversation:', messages);
+            return res.status(201).json(messages);
+            }
+        });
+        return res.status(200)
+
     } catch (error) {
         console.log(error)
         return res.status(400).json({
             success:false, 
-            message:"Message not viewed"
+            message:"Error on Getting Conversations"
         });
     }
 }
