@@ -112,7 +112,6 @@ export async function createConversation(req, res) {
                         });
                     }
                 } else {
-                    console.log('Conversations involving the users:', conversations);
                     return res.status(201).json(conversations);
                 }
             }
@@ -230,7 +229,6 @@ export async function getContact(req, res) {
             } else {
             if (conversation) {
                 const contact = conversation.members.find(contact => contact.uid !== uid)
-                console.log(contact)
                 return res.status(201).json(contact);
                 // Users who are members of the specified conversation
             } else {

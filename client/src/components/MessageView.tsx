@@ -4,8 +4,11 @@ import axios from "../api/axios";
 import useUser from "../hooks/useUser";
 import { UseUserProps } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
+import moment from "moment";
+import { io } from "socket.io-client";
 
 
+const socket = io("http://localhost:3000")
 
 function MessageViewHeader({contact}: {contact:{
     name:string, 
@@ -64,7 +67,7 @@ function MessageViewFooter({sendMessage}: {sendMessage: (e: React.FormEvent, val
 
     return(
         <span className="w-full flex items-center absolute bottom-0 bg-blue-gray-50 rounded-b-lg">
-            <div className="w-full flex items-center ">
+            <form className="w-full flex items-center ">
                 <span className="w-full h-10">
                     <textarea 
                     onChange={(e)=>setMessage(e.target.value)}
@@ -74,43 +77,29 @@ function MessageViewFooter({sendMessage}: {sendMessage: (e: React.FormEvent, val
                 </span>
                 <a href="#buttons-with-link">
                 <Tooltip content="Send" placement="top">
-                    <Button onClick={(e)=>sendMessage(e,message)} className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
+                    <Button type="submit" onClick={(e)=>sendMessage(e,message)} className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                         </svg>
                     </Button>
                 </Tooltip>
                 </a>
-            </div>
+            </form>
 
         </span>
     )
 }
 
-function MessageBody({selectedMessage}:{selectedMessage:string}) {
-    const [messages, setMessages] = useState([])
-    const { user }: UseUserProps = useUser()
+function MessageBody({messages, user}:{messages:[], user:{email:string}}) {
 
-    useEffect(() => {
-        const controller = new AbortController();
-        const signal = controller.signal;
-    
-        axios.post(`/messages/get-messages`, {
-          email: user?.email,
-          conversationName: selectedMessage
-        },{signal})
-        .then(res => setMessages(res.data))
-        .catch(err => console.log(err))
-    
-        return () => controller.abort()
-      }, [selectedMessage])
 
     return(
         <div className="py-12 overflow-auto">
             {messages.map(({_id, message, sender, timestamp, createdAt}: any) => {
+                const time = moment.utc(timestamp||createdAt).utcOffset(8 * 60).format('MMMM Do YYYY, h:mm A');
                 return sender.email !== user.email ?
                     <div className="container flex" key={_id}>
-                        <Tooltip content={timestamp || createdAt} placement="right-end">
+                        <Tooltip content={time} placement="right-end">
                             <div className="w-auto h-auto py-1 px-2 m-px bg-gray-300 rounded-xl rounded-l-lg">
                                 <p className="text-black text-sm">{message}</p>
                             </div>
@@ -120,7 +109,7 @@ function MessageBody({selectedMessage}:{selectedMessage:string}) {
                 :
                 
                     <div className="container flex justify-end" key={_id}>
-                        <Tooltip content={timestamp || createdAt} placement="left-end">
+                        <Tooltip content={time} placement="left-end">
                             <div className="w-auto h-auto py-1 px-2 m-px bg-green-500 rounded-xl rounded-r-lg">
                                 <p className="text-white text-sm">{message}</p>
                             </div>
@@ -172,10 +161,37 @@ export default function MessageView({contact, sendMessage, selectedMessage}: {
     sendMessage: (e: React.FormEvent, m: string)=>void,
     selectedMessage: string
 }) {
+    const [messages, setMessages] = useState<any>([])
+    const { user }: UseUserProps = useUser()
+
+    useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+    
+        axios.post(`/messages/get-messages`, {
+          email: user?.email,
+          conversationName: selectedMessage
+        },{signal})
+        .then(res => setMessages(res.data))
+        .catch(err => console.log(err))
+    
+        return () => controller.abort()
+      }, [selectedMessage])
+
+      socket.on('receive-message', message => {
+        messages.push({_id:123, message:message, sender:{email:user?.email}, createdAt:Date.now() })
+        console.log(message)
+      })
+
   return (
     <Card className="w-full">
         <MessageViewHeader contact={contact}/>
-         <MessageBody selectedMessage={selectedMessage}/>
+
+         <MessageBody 
+         messages={messages} 
+         user={user}
+         />
+
         <MessageViewFooter sendMessage={sendMessage}/>   
     </Card>
   )

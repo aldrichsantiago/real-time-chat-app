@@ -209,7 +209,7 @@ function GetStarted() {
 
     return (
         <div className="h-screen flex flex-col justify-center items-center">
-            <Typography variant="h1" className="text-6xl my-3">
+            <Typography variant="h1" className="text-6xl my-3 text-center">
                 Real-time Chat Application
             </Typography>
             <span>

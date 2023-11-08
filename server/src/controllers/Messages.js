@@ -36,7 +36,6 @@ export async function createMessage(req, res) {
 
         const contact = await User.findOne({email: {$in:[senderEmail]}})
         const conversation = await Conversation.findOne({conversationName: {$in:[conversationName]}})
-        console.log(conversation._id)
 
         await Message.create({
             message,
@@ -73,7 +72,6 @@ export async function getConversationMessages(req, res) {
         const sender = await User.findOne({
             email: senderEmail
         });
-        console.log(conversation)
         // Conversation.find({
         //     conversationName: { $all: [conversationName] }
         // })
@@ -101,7 +99,6 @@ export async function getConversationMessages(req, res) {
             // Handle error
             } else {
             // `messages` will contain all messages exchanged between the specified users in the room
-            console.log('Messages in the conversation:', messages);
             return res.status(201).json(messages);
             }
         });

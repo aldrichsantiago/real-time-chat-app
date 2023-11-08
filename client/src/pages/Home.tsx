@@ -8,6 +8,9 @@ import useUser from "../hooks/useUser";
 import { toast } from 'react-toastify';
 import { useState } from 'react'
 import axios from "../api/axios";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3000")
 
 function Home() {
   const navigate = useNavigate();
@@ -24,8 +27,9 @@ function Home() {
     })
     .then(res => setContact(res.data))
     .catch(err => console.log(err))
-    
+    socket.emit('join-conversation', id)
   }
+
   const setNewContact = (data:{}) => {               
     console.log(data)
     setContact(data)
@@ -38,11 +42,8 @@ function Home() {
       senderEmail:user?.email,
       conversationName: selectedMessage,
     });
-    console.log({
-      message,
-      senderEmail:user?.email,
-      conversationName: selectedMessage,
-    })
+    socket.emit('send-message', message, selectConversation)
+
 }
   
   const notify = (message:string) => 
@@ -70,8 +71,6 @@ function Home() {
     console.log(error);
     });
   }
-
-  
 
   return (
     <div className="h-screen p-4 flex gap-4">
