@@ -23,7 +23,7 @@ import axios from "../api/axios";
 import { toast } from 'react-toastify';
 import moment from "moment";
 
-const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
+export const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
 
 type ConversationTypes = {
   conversationName: string
@@ -99,7 +99,7 @@ export default function Sidebar({
     .catch(err => console.log(err))
 
     return () => controller.abort()
-  }, [])
+  }, [currentSelected])
 
   useEffect(() => {
     const controller = new AbortController();
@@ -122,9 +122,10 @@ export default function Sidebar({
       <div className="mb-20 p-1 md:mb-6">
         <div className="flex items-center justify-between">
             <Avatar
+              onClick={handleOpen}
               variant="circular"
               alt="user"
-              className="mx-6 w-10 h-10 rounded-full"
+              className="mx-6 w-10 h-10 rounded-full cursor-pointer"
               src={ user?.photoURL ? user.photoURL : "https://www.eventfulnigeria.com/wp-content/uploads/2021/04/Avatar-PNG-Free-Download.png"}
             />
           <Typography variant="h6" color="blue-gray" className="max-w-xs truncate">

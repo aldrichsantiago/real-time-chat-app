@@ -10,7 +10,7 @@ import { useState } from 'react'
 import axios from "../api/axios";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000")
+export const socket = io("http://localhost:3000")
 
 function Home() {
   const navigate = useNavigate();
@@ -42,9 +42,8 @@ function Home() {
       senderEmail:user?.email,
       conversationName: selectedMessage,
     });
-    socket.emit('send-message', message, selectConversation)
-
-}
+    socket.emit('send-message', message, selectedMessage)
+  }
   
   const notify = (message:string) => 
   toast.success(message, {

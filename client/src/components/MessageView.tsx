@@ -5,10 +5,8 @@ import useUser from "../hooks/useUser";
 import { UseUserProps } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import { io } from "socket.io-client";
-
-
-const socket = io("http://localhost:3000")
+import { socket } from "../pages/Home";
+import { userLocal } from "./Sidebar";
 
 function MessageViewHeader({contact}: {contact:{
     name:string, 
@@ -67,7 +65,7 @@ function MessageViewFooter({sendMessage}: {sendMessage: (e: React.FormEvent, val
 
     return(
         <span className="w-full flex items-center absolute bottom-0 bg-blue-gray-50 rounded-b-lg">
-            <form className="w-full flex items-center ">
+            <form className="w-full flex items-center" onSubmit={(e)=>sendMessage(e,message)}>
                 <span className="w-full h-10">
                     <textarea 
                     onChange={(e)=>setMessage(e.target.value)}
@@ -77,7 +75,7 @@ function MessageViewFooter({sendMessage}: {sendMessage: (e: React.FormEvent, val
                 </span>
                 <a href="#buttons-with-link">
                 <Tooltip content="Send" placement="top">
-                    <Button type="submit" onClick={(e)=>sendMessage(e,message)} className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
+                    <Button type="submit" className="rounded-b-lg !rounded-l-none rounded-tr-none p-2 hover:text-green-600 hover:bg-green-200">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                         </svg>
@@ -151,7 +149,7 @@ function MessageBody({messages, user}:{messages:[], user:{email:string}}) {
     )
 }
 
-export default function MessageView({contact, sendMessage, selectedMessage}: {
+export default function MessageView({ contact, sendMessage, selectedMessage}: {
     contact:{
         name:string, 
         photoURL:string,
@@ -159,10 +157,16 @@ export default function MessageView({contact, sendMessage, selectedMessage}: {
         uid:string
     },
     sendMessage: (e: React.FormEvent, m: string)=>void,
-    selectedMessage: string
+    selectedMessage: string,
 }) {
     const [messages, setMessages] = useState<any>([])
     const { user }: UseUserProps = useUser()
+
+    const handleSendMessage = async(e:React.FormEvent, message: string) => {
+        sendMessage(e,message)
+        setMessages([...messages,{_id:123, message:message, sender:{email:user.email}, createdAt:Date.now() }])
+
+    }
 
     useEffect(() => {
         const controller = new AbortController();
@@ -174,14 +178,19 @@ export default function MessageView({contact, sendMessage, selectedMessage}: {
         },{signal})
         .then(res => setMessages(res.data))
         .catch(err => console.log(err))
-    
-        return () => controller.abort()
-      }, [selectedMessage])
 
-      socket.on('receive-message', message => {
-        messages.push({_id:123, message:message, sender:{email:user?.email}, createdAt:Date.now() })
-        console.log(message)
-      })
+        return () => controller.abort()
+    }, [selectedMessage])
+
+    
+    socket.on('connect',()=>{
+        console.log('user connected')
+    })
+
+    socket.on('receive-message', (message: any) => {
+        setMessages([...messages,{_id:123, message:message, sender:{email:"none"}, createdAt:Date.now() }])
+    })
+    
 
   return (
     <Card className="w-full">
@@ -192,7 +201,7 @@ export default function MessageView({contact, sendMessage, selectedMessage}: {
          user={user}
          />
 
-        <MessageViewFooter sendMessage={sendMessage}/>   
+        <MessageViewFooter sendMessage={handleSendMessage}/>   
     </Card>
   )
 }
