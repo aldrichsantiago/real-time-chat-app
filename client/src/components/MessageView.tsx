@@ -6,7 +6,6 @@ import { UseUserProps } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import { socket } from "../pages/Home";
-import { userLocal } from "./Sidebar";
 
 function MessageViewHeader({contact}: {contact:{
     name:string, 
@@ -65,12 +64,13 @@ function MessageViewFooter({sendMessage}: {sendMessage: (e: React.FormEvent, val
 
     return(
         <span className="w-full flex items-center absolute bottom-0 bg-blue-gray-50 rounded-b-lg">
-            <form className="w-full flex items-center" onSubmit={(e)=>sendMessage(e,message)}>
+            <form className="w-full flex items-center" onSubmit={(e)=>{sendMessage(e,message); setMessage("")}}>
                 <span className="w-full h-10">
                     <textarea 
                     onChange={(e)=>setMessage(e.target.value)}
                     className="w-full h-full m-0 border-t-2 p-2 rounded-bl-lg overflow-hidden resize-none"
                     placeholder="Enter your message here..."
+                    value={message}
                     />
                 </span>
                 <a href="#buttons-with-link">
@@ -176,7 +176,7 @@ export default function MessageView({ contact, sendMessage, selectedMessage}: {
           email: user?.email,
           conversationName: selectedMessage
         },{signal})
-        .then(res => setMessages(res.data))
+        .then(res => {setMessages(res.data);console.log(res.data)})
         .catch(err => console.log(err))
 
         return () => controller.abort()
@@ -189,6 +189,7 @@ export default function MessageView({ contact, sendMessage, selectedMessage}: {
 
     socket.on('receive-message', (message: any) => {
         setMessages([...messages,{_id:123, message:message, sender:{email:"none"}, createdAt:Date.now() }])
+    
     })
     
 

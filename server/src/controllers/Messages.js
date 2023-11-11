@@ -42,6 +42,7 @@ export async function createMessage(req, res) {
             sender: contact._id,
             conversation: conversation._id,
         })
+        console.log('a new message created')
 
         return res.status(201).json({
             success: true,

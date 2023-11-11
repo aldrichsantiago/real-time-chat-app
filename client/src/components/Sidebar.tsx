@@ -12,6 +12,7 @@ import {
   DialogBody,
   DialogFooter,
   Input,
+  Tooltip,
 } from "@material-tailwind/react";
 import {
   PowerIcon,
@@ -22,6 +23,7 @@ import { useEffect, useState } from "react";
 import axios from "../api/axios";
 import { toast } from 'react-toastify';
 import moment from "moment";
+import { socket } from "../pages/Home";
 
 export const userLocal = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -72,8 +74,14 @@ export default function Sidebar({
     if(response.data.success === false){
       errNotify("There is no user with that email")
     } else {
-      setNewContact(response.data)
+      if (response.data[0].members[0].uid != userLocal.uid) {
+        setNewContact(response.data[0])
+      }
+      if (response.data[0].members[1].uid != userLocal.uid) {
+        setNewContact(response.data[1])
+      }
       setOpen(!open);
+      window.location.reload()
     }
   };
   const changeChat = (id:string) => {
@@ -99,7 +107,7 @@ export default function Sidebar({
     .catch(err => console.log(err))
 
     return () => controller.abort()
-  }, [currentSelected])
+  }, [userLocal])
 
   useEffect(() => {
     const controller = new AbortController();
@@ -116,6 +124,28 @@ export default function Sidebar({
 
     return () => controller.abort()
   }, [])
+
+  socket.on('receive-message', (message: any) => {
+    axios.post(`/users/get-conversations`, {
+      uid: userLocal.uid,
+    })
+    .then(res => {
+      setConversations(res.data)
+      console.log(res.data)
+    })
+    .catch(err => console.log(err))
+  })
+
+  socket.on('send-message', () => {
+    axios.post(`/users/get-conversations`, {
+      uid: userLocal.uid,
+    })
+    .then(res => {
+      setConversations(res.data)
+      console.log(res.data)
+    })
+    .catch(err => console.log(err))
+  })
   
   return (
     <Card className="h-[calc(100vh-2rem)] w-[100px] md:w-full md:max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5">
@@ -128,14 +158,18 @@ export default function Sidebar({
               className="mx-6 w-10 h-10 rounded-full cursor-pointer"
               src={ user?.photoURL ? user.photoURL : "https://www.eventfulnigeria.com/wp-content/uploads/2021/04/Avatar-PNG-Free-Download.png"}
             />
-          <Typography variant="h6" color="blue-gray" className="max-w-xs truncate">
-            {user?.username || user?.email || "NO USER"}
-          </Typography>
-          <a onClick={handleOpen} href="#" className="py-1 px-2 rounded-md transition-colors text-black hover:text-gray-600 hover:bg-gray-100">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-            </svg>
-          </a>
+            <Tooltip content={user?.username || user?.email || "NO USER"}>
+              <Typography variant="h6" color="blue-gray" className="max-w-xs truncate">
+                {user?.username || user?.email || "NO USER"}
+              </Typography>
+            </Tooltip>
+            <Tooltip content="New Message"> 
+              <a onClick={handleOpen} href="#" className="py-1 px-2 rounded-md transition-colors text-black hover:text-gray-600 hover:bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                </svg>
+              </a>
+          </Tooltip>
           <Dialog open={open} handler={handleOpen}>
         <DialogHeader>New Message</DialogHeader>
         <DialogBody>
@@ -163,7 +197,7 @@ export default function Sidebar({
       </div>
       <List className="h-auto overflow-y-scroll">
         <div className="flex flex-col gap-2">
-          <ListItem onClick={()=>changeChat('1')}>
+          {/* <ListItem onClick={()=>{changeChat('1')}}>
             <ListItemPrefix>
             <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -187,7 +221,7 @@ export default function Sidebar({
             <ListItemSuffix className="relative">
               <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
             </ListItemSuffix>
-          </ListItem>
+          </ListItem> */}
           
           { conversations?.map(({conversationName, members, latestMessage})=>{
             const time = moment.utc(latestMessage?.createdAt).utcOffset(8 * 60).format("HH:mm");

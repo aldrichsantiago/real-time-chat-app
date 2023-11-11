@@ -104,6 +104,7 @@ export async function createConversation(req, res) {
                     console.log(conversationName)
                     try {
                         const savedConversation = await newConversation.save(); 
+                        console.log(savedConversation)
                         res.status(201).json(savedConversation); 
                     } catch (error) {
                         return res.status(400).json({

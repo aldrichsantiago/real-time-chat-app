@@ -5,6 +5,7 @@ import { main } from './src/config/db.js';
 import router from './src/routes/index.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { instrument } from '@socket.io/admin-ui';
 
 const app = express();
 const server = createServer(app);
@@ -12,16 +13,24 @@ const server = createServer(app);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors({ 
-  origin:['http://localhost:5173', '*'],
-  methods: ['GET','POST','DELETE','PUT','PATCH'] 
+  origin:['http://localhost:5173', 'https://admin.socket.io','*'],
+  methods: ['GET','POST','DELETE','PUT','PATCH'],
+  credentials: true 
 }));
 app.use(router);
 
+
+
 const io = new Server(server, {
-    cors: {
-      origin: "http://localhost:5173"
-    }
+  cors: {
+    origin:['http://localhost:5173', 'https://admin.socket.io','*'],
+    credentials: true
+  }
 });
+
+
+instrument(io, {auth:false})
+
 
 app.get('/', async(req, res) => {
   console.log("API IS WORKING")
@@ -44,6 +53,7 @@ io.on('connection', (socket) => {
     socket.join(room)
   })
 });
+
 
 server.listen(3000, () => {
   console.log('server running at http://localhost:3000');
