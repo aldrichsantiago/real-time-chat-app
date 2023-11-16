@@ -42,6 +42,7 @@ function Home() {
       senderEmail:user?.email,
       conversationName: selectedMessage,
     });
+    console.log(res?.data)
     socket.emit('send-message', message, selectedMessage)
   }
   
