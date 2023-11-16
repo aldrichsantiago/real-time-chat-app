@@ -4,7 +4,6 @@ import {
   List,
   ListItem,
   ListItemPrefix,
-  ListItemSuffix,
   Avatar,
   Button,
   Dialog,
@@ -51,7 +50,7 @@ export default function Sidebar({
   const [conversations, setConversations] = useState<ConversationTypes[]>();
   const [contactEmail, setContactEmail] = useState<string>('')
   const [currentSelected, setCurrentSelected] = useState('');
-
+  console.log(currentSelected)
   const errNotify = (message:string) => 
     toast.error(message, {
       position: "bottom-right",
@@ -132,6 +131,7 @@ export default function Sidebar({
     .then(res => {
       setConversations(res.data)
       console.log(res.data)
+      console.log(message)
     })
     .catch(err => console.log(err))
   })
