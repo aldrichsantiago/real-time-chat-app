@@ -97,10 +97,10 @@ export default function Sidebar({
     const signal = controller.signal;
 
     axios.post(`/users/new/email`, {
-      uid:user?.uid,
-      email:user?.email,
-      name:user?.username,
-      photoURL:user?.photoURL,
+      uid:userLocal?.uid,
+      email:userLocal?.email,
+      name:userLocal?.username,
+      photoURL:userLocal?.photoURL,
     },{signal})
     .then(res => console.log(res.data))
     .catch(err => console.log(err))
