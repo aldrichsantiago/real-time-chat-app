@@ -23,7 +23,7 @@ app.use(router);
 
 const io = new Server(server, {
   cors: {
-    origin:['http://localhost:5173', 'https://admin.socket.io','*'],
+    origin:['http://localhost:5173', 'https://admin.socket.io','*', 'https://real-time-chat-app-aldrichsantiagos-projects.vercel.app'],
     credentials: true
   }
 });
