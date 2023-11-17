@@ -353,7 +353,6 @@ function GetStarted() {
                                 </TabPanel>
                             </TabsBody>
                         </Tabs>
-                        
                     </Card>
                 </DialogBody>
             </Dialog>
