@@ -6,6 +6,8 @@ import { UseUserProps } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import { socket } from "../pages/Home";
+import { toast } from 'react-toastify';
+
 
 function MessageViewHeader({contact}: {contact:{
     name:string, 
@@ -162,7 +164,22 @@ export default function MessageView({ contact, sendMessage, selectedMessage}: {
     const [messages, setMessages] = useState<any>([])
     const { user }: UseUserProps = useUser()
 
+    const errNotify = (message:string) => 
+    toast.error(message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+    });
+
     const handleSendMessage = async(e:React.FormEvent, message: string) => {
+        if (message == '') {
+            return errNotify('Message cant be empty')
+        }
         sendMessage(e,message)
         setMessages([...messages,{_id:123, message:message, sender:{email:user.email}, createdAt:Date.now() }])
 

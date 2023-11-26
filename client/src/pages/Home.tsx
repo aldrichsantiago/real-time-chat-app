@@ -16,7 +16,7 @@ function Home() {
   const navigate = useNavigate();
   const { setUser, user }: UseUserProps = useUser();
   const [selectedMessage, setSelectedMessage] = useState<any>('')
-  const [contact, setContact] = useState<any>({})
+  const [contact, setContact] = useState<any>(null)
 
 
   const selectConversation = (id:string) => {               
@@ -79,11 +79,19 @@ function Home() {
       selectConversation={selectConversation}
       setNewContact={setNewContact}
       />
+      {
+      contact ? 
       <MessageView
       contact={contact}
       sendMessage={sendMessage}
       selectedMessage={selectedMessage}
       />
+       : 
+      <div className="flex items-center justify-center">
+        <h1 className="text-4xl">No Conversation Selected</h1>
+      </div>
+       }
+      
     </div>
   )
 }

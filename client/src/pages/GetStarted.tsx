@@ -174,6 +174,8 @@ function GetStarted() {
             navigate("/home")
             notify("Successfully Logged In")
             console.log(user);
+            window.location.reload()
+
         })
         .catch((error) => {
             const errorCode = error.code;
