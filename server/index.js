@@ -13,7 +13,7 @@ const server = createServer(app);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors({ 
-  origin:['http://localhost:5173', 'https://admin.socket.io','https://real-time-chat-app-aldrichsantiagos-projects.vercel.app','*'],
+  origin:['https://admin.socket.io','https://real-time-chat-app-aldrichsantiagos-projects.vercel.app','*'],
   methods: ['GET','POST','DELETE','PUT','PATCH'],
   credentials: true 
 }));
@@ -23,7 +23,7 @@ app.use(router);
 
 const io = new Server(server, {
   cors: {
-    origin:['http://localhost:5173', 'https://admin.socket.io','*', 'https://real-time-chat-app-aldrichsantiagos-projects.vercel.app'],
+    origin:['https://admin.socket.io','*', 'https://real-time-chat-app-aldrichsantiagos-projects.vercel.app'],
     credentials: true
   }
 });

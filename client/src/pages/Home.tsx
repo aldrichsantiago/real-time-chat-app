@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { signOut } from "firebase/auth";
 import MessageView from "../components/MessageView"
 import Sidebar from "../components/Sidebar"
@@ -30,7 +31,7 @@ function Home() {
     socket.emit('join-conversation', id)
   }
 
-  const setNewContact = (data:{}) => {               
+  const setNewContact = (data:object) => {               
     console.log(data)
     setContact(data)
   }
