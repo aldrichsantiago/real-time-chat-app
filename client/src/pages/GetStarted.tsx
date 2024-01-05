@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {useState} from 'react' 
 import { 
     Button, 
@@ -279,9 +280,7 @@ function GetStarted() {
                                         <IconButton onClick={loginWithGoogle} className="rounded bg-[#ea4335] hover:shadow-[#ea4335]/20 focus:shadow-[#ea4335]/20 active:shadow-[#ea4335]/10">
                                             <i className="fab fa-google text-lg" />
                                         </IconButton>
-                                        <IconButton className="rounded bg-[#333333] hover:shadow-[#333333]/20 focus:shadow-[#333333]/20 active:shadow-[#333333]/10">
-                                            <i className="fab fa-github text-lg" />
-                                        </IconButton>
+                                        
                                     </div>
                                 </TabPanel>
 
